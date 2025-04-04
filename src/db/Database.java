@@ -10,6 +10,7 @@ public class Database {
     private static ArrayList<Entity> entities = new ArrayList<>();
     private static int firstId = 1;
     private static HashMap<Integer, Validator> validators = new HashMap<>();
+    private Database() {}
 
     public static void registerValidator(int entityCode, Validator validator) {
         if(validators.containsKey(entityCode)) {
