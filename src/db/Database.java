@@ -1,14 +1,30 @@
 package db;
 
 import db.exception.EntityNotFoundException;
+import db.exception.InvalidEntityException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Database {
     private static ArrayList<Entity> entities = new ArrayList<>();
     private static int firstId = 1;
+    private static HashMap<Integer, Validator> validators = new HashMap<>();
 
-    public static void add(Entity e) {
+    public static void registerValidator(int entityCode, Validator validator) {
+        if(validators.containsKey(entityCode)) {
+            throw new IllegalArgumentException("validator for the code " + entityCode + " already exists!");
+        }
+        validators.put(entityCode, validator);
+    }
+
+    public static void add(Entity e) throws InvalidEntityException {
+        Validator validator = validators.get(e.getEntityCode());
+        if (validator != null) {
+            validator.validate(e);
+        } else {
+            throw new IllegalArgumentException("No validator registered for entity code " + e.getEntityCode());
+        }
         e.id = firstId;
         try {
             entities.add(e.clone());
@@ -42,7 +58,13 @@ public class Database {
         throw new EntityNotFoundException(id);
     }
 
-    public static void update (Entity e) throws EntityNotFoundException {
+    public static void update (Entity e) throws EntityNotFoundException, InvalidEntityException {
+        Validator validator = validators.get(e.getEntityCode());
+        if (validator != null) {
+            validator.validate(e);
+        } else {
+            throw new IllegalArgumentException("No validator registered for entity code " + e.getEntityCode());
+        }
         boolean found = false;
         for (int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
