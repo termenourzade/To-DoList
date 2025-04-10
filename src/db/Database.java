@@ -1,9 +1,8 @@
 package db;
 
-import db.exception.EntityNotFoundException;
-import db.exception.InvalidEntityException;
-
+import db.exception.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 public class Database {
@@ -16,23 +15,25 @@ public class Database {
         if(validators.containsKey(entityCode)) {
             throw new IllegalArgumentException("validator for the code " + entityCode + " already exists!");
         }
-        validators.put(entityCode, validator);
+        validators.put(entityCode, validator );
     }
 
     public static void add(Entity e) throws InvalidEntityException {
         Validator validator = validators.get(e.getEntityCode());
         if (validator != null) {
             validator.validate(e);
-        } else {
-            throw new IllegalArgumentException("No validator registered for entity code " + e.getEntityCode());
         }
-        e.id = firstId;
-        try {
-            entities.add(e.clone());
-        } catch (CloneNotSupportedException ex) {
-            System.out.println("copying failed!");
+        if(e instanceof Trackable) {
+            ((Trackable) e).setCreationDate(new Date());
+            ((Trackable) e).setLastModificationDate(new Date());
         }
-        firstId++;
+            e.id = firstId;
+            try {
+                entities.add(e.clone());
+            } catch (CloneNotSupportedException ex) {
+                System.out.println("copying failed!");
+            }
+            firstId++;
     }
 
     public static Entity get(int id) throws EntityNotFoundException {
@@ -63,8 +64,10 @@ public class Database {
         Validator validator = validators.get(e.getEntityCode());
         if (validator != null) {
             validator.validate(e);
-        } else {
-            throw new IllegalArgumentException("No validator registered for entity code " + e.getEntityCode());
+        }
+
+        if(e instanceof Trackable) {
+            ((Trackable) e).setLastModificationDate(new Date());
         }
         boolean found = false;
         for (int i = 0; i < entities.size(); i++) {
