@@ -17,11 +17,11 @@ public class StepValidator implements Validator {
         }
         boolean exist = false;
         for (Entity e : Database.entities)
-            if (e.getEntityCode() == Task.TASk_ENTITY_CODE && e.id == step.taskRef) {
+            if (e.getEntityCode() == Task.TASK_ENTITY_CODE && e.id == step.taskRef) {
                 exist = true;
                 break;
             }
-        if (exist)
+        if (!exist)
             throw new InvalidEntityException("cannot find task with ID= "+ step.taskRef + ".");
     }
 }
